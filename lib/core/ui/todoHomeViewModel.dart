@@ -26,7 +26,15 @@ class TodoViewModel {
     status.value = Status.Completed;
   }
 
+  editTodo(Todo todo) async {
+    status.value = Status.Updating;
+    await dao.editTodo(todo);
+    todos = await dao.getAllTodo();
+    status.value = Status.Completed;
+  }
+
   deleteTodo(Todo todo) async {
+    todos.remove(todo);
     status.value = Status.Updating;
     await dao.deleteTodo(todo);
     todos = await dao.getAllTodo();

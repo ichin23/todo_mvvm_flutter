@@ -13,7 +13,8 @@ class TodoDao {
   _getDbInstance() async => _db = await DbConfig.getInstance();
 
   Future<List<Todo>> getAllTodo() async {
-    List<Map<String, Object?>>? todoMap = await _db?.query(TableTodo.tableName);
+    List<Map<String, Object?>>? todoMap =
+        await _db?.query(TableTodo.tableName, orderBy: "status");
 
     if (todoMap == null || todoMap.isEmpty) return [];
 
@@ -25,7 +26,8 @@ class TodoDao {
   }
 
   editTodo(Todo todo) async {
-    await _db?.update(TableTodo.tableName, todo.toJson());
+    await _db?.update(TableTodo.tableName, todo.toJson(),
+        where: "id = ?", whereArgs: [todo.id]);
   }
 
   deleteTodo(Todo todo) async {

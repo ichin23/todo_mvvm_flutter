@@ -22,6 +22,7 @@ class _TodoHomeState extends State<TodoHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text("To-Do MVVM")),
       body: SafeArea(
         child: ValueListenableBuilder(
             valueListenable: todoVM.status,
@@ -33,18 +34,45 @@ class _TodoHomeState extends State<TodoHome> {
               }
 
               return ListView.separated(
-                  itemBuilder: (context, i) => ListTile(
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => todoVM.deleteTodo(todos[i]),
+                  itemBuilder: (context, i) => Dismissible(
+                        key: Key(todos[i].id.toString()),
+                        background: Row(children: [
+                          Expanded(
+                              child: Container(
+                            alignment: Alignment.centerLeft,
+                            color: Colors.red,
+                            child: const Icon(Icons.delete),
+                          )),
+                        ]),
+                        onDismissed: (direction) => todoVM.deleteTodo(todos[i]),
+                        child: ListTile(
+                          onTap: () => showAddTodo(context, todos[i]),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  todos[i].status
+                                      ? Icons.cancel_outlined
+                                      : Icons.check,
+                                  color: todos[i].status
+                                      ? Colors.white.withOpacity(0.5)
+                                      : Colors.white,
+                                ),
+                                onPressed: () => todoVM.editTodo(
+                                    todos[i].copy(status: !todos[i].status)),
+                              ),
+                            ],
+                          ),
+                          title: Text(todos[i].name,
+                              style: TextStyle(
+                                color: todos[i].status
+                                    ? Colors.white.withOpacity(0.5)
+                                    : Colors.white,
+                              )),
                         ),
-                        title: Text(todos[i].name),
                       ),
-                  separatorBuilder: (context, i) => const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                        child: Divider(),
-                      ),
+                  separatorBuilder: (context, i) => const Divider(),
                   itemCount: todos.length);
             }),
       ),
@@ -68,27 +96,46 @@ class _TodoHomeState extends State<TodoHome> {
   }
 }
 
-showAddTodo(BuildContext context) {
+showAddTodo(BuildContext context, [Todo? todo]) {
+  TextEditingController title = TextEditingController();
+  title.text = todo?.name ?? "";
   showModalBottomSheet(
       context: context,
       builder: (context) => BottomSheet(
           onClosing: () {},
           builder: (context) => StatefulBuilder(builder: (context, setstate) {
-                TextEditingController title = TextEditingController();
-                return Column(
-                  children: [
-                    TextFormField(
-                      controller: title,
-                    ),
-                    TextButton(
-                      child: const Text("Add"),
-                      onPressed: () {
-                        GetIt.I<TodoViewModel>()
-                            .addTodo(Todo(title.text, false));
-                        Navigator.pop(context);
-                      },
-                    )
-                  ],
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        decoration:
+                            const InputDecoration(border: OutlineInputBorder()),
+                        autofocus: true,
+                        controller: title,
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor),
+                        child: const Text(
+                          "Add",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          if (todo != null) {
+                            GetIt.I<TodoViewModel>()
+                                .editTodo(todo.copy(name: title.text));
+                          } else {
+                            GetIt.I<TodoViewModel>()
+                                .addTodo(Todo(title.text, false));
+                          }
+                          Navigator.pop(context);
+                        },
+                      ),
+                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom)
+                    ],
+                  ),
                 );
               })));
 }
