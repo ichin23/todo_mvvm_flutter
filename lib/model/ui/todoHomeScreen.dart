@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:todo_mvvm/core/ui/todoHomeViewModel.dart';
+import 'package:todo_mvvm/model/ui/todoHomeViewModel.dart';
 import 'package:todo_mvvm/model/todo/todo.dart';
+import 'package:todo_mvvm/model/ui/widgets/getText.dart';
 
 class TodoHome extends StatefulWidget {
   const TodoHome({super.key});
@@ -46,7 +47,8 @@ class _TodoHomeState extends State<TodoHome> {
                         ]),
                         onDismissed: (direction) => todoVM.deleteTodo(todos[i]),
                         child: ListTile(
-                          onTap: () => showAddTodo(context, todos[i]),
+                          onTap: () =>
+                              getText(context, "Editar ToDo", todos[i].name),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -87,55 +89,12 @@ class _TodoHomeState extends State<TodoHome> {
             }
 
             return FloatingActionButton(
-                onPressed: () {
-                  showAddTodo(context);
+                onPressed: () async {
+                  var value = getText(context, "Inserir novo");
+                  print(value);
                 },
                 child: const Icon(Icons.add));
           }),
     );
   }
-}
-
-showAddTodo(BuildContext context, [Todo? todo]) {
-  TextEditingController title = TextEditingController();
-  title.text = todo?.name ?? "";
-  showModalBottomSheet(
-      context: context,
-      builder: (context) => BottomSheet(
-          onClosing: () {},
-          builder: (context) => StatefulBuilder(builder: (context, setstate) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        decoration:
-                            const InputDecoration(border: OutlineInputBorder()),
-                        autofocus: true,
-                        controller: title,
-                      ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor),
-                        child: const Text(
-                          "Add",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () {
-                          if (todo != null) {
-                            GetIt.I<TodoViewModel>()
-                                .editTodo(todo.copy(name: title.text));
-                          } else {
-                            GetIt.I<TodoViewModel>()
-                                .addTodo(Todo(title.text, false));
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom)
-                    ],
-                  ),
-                );
-              })));
 }

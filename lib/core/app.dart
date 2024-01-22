@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todo_mvvm/core/ui/todoHomeScreen.dart';
+import 'package:todo_mvvm/model/ui/todoHomeScreen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
